@@ -1,0 +1,39 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <ImageButton
+        android:id="@+id/gesture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:contentDescription="@string/gesture"
+        android:src="@drawable/gesture" />
+
+    <ImageButton
+        android:id="@+id/pinch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:contentDescription="@string/pinch"
+        android:src="@drawable/pinch" />
+
+    <ImageButton
+        android:id="@+id/multiGesture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:contentDescription="@string/multiGesture"
+        android:src="@drawable/multi_gesture" />
+
+    <ImageButton
+        android:id="@+id/multiTouch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:contentDescription="@string/multiTouch"
+        android:src="@drawable/multi_touch" />
+
+</LinearLayout>

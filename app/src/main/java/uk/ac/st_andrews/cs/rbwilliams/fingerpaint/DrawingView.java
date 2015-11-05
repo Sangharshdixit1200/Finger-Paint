@@ -6,8 +6,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.support.v4.view.GestureDetectorCompat;
+import android.util.Log;
 import android.util.SparseArray;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -18,12 +22,17 @@ import android.util.TypedValue;
 /**
  * Created by rbwilliams on 23/10/2015.
  */
-public class DrawingView extends View {
+public class DrawingView extends View implements View.OnClickListener,
+        GestureDetector.OnGestureListener,
+        GestureDetector.OnDoubleTapListener {
+
+    private float screenW;
+    private float screenH;
 
     private Path drawPath;
     private Paint drawPaint;
     private Paint canvasPaint;
-    private int paintColor = 0xFF660000;
+    public int paintColor = 0xFF660000;
 
     private Canvas drawCanvas;
     private Bitmap canvasBitmap;
@@ -55,8 +64,25 @@ public class DrawingView extends View {
     private boolean multiTouch = false;
     private Paint multiTouchPaint;
 
+    boolean gesture = false;
+    private GestureDetectorCompat mDetector;
+
+    boolean multiGesture = false;
+
+    boolean pinch = false;
+    public ScaleGestureDetector mScaleDetector;
+    public static float mScaleFactor = 1.f;
+
+    private static final String DEBUG_TAG = "Gestures";
+
+
+
+
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
+        mDetector = new GestureDetectorCompat(context,this);
+        mDetector.setOnDoubleTapListener((GestureDetector.OnDoubleTapListener) this);
+        //mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         setupDrawing();
     }
 
@@ -94,6 +120,8 @@ public class DrawingView extends View {
         multiTouchPaint.setAntiAlias(true);
         multiTouchPaint.setStyle(Paint.Style.STROKE);
         multiTouchPaint.setDither(true);
+
+
     }
 
     @Override
@@ -102,6 +130,9 @@ public class DrawingView extends View {
         //view given size
         canvasBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
+
+        screenW = width;
+        screenH = height;
     }
 
     @Override
@@ -131,123 +162,140 @@ public class DrawingView extends View {
         }
     }
 
+
+
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // get coordinates of users touch
-        float touchX = event.getX();
-        float touchY = event.getY();
+        if (gesture) {
+            this.mDetector.onTouchEvent(event);
+            return true;
+        } else if(pinch){
+            return super.onTouchEvent(event);
+        }else if(multiGesture){
+            /*
+            double delta_x = (event.getX(0) - event.getX(1));
+            double delta_y = (event.getY(0) - event.getY(1));
+            double radians = Math.atan2(delta_y, delta_x);
+            float rotation =  (float) Math.toDegrees(radians);
+            drawCanvas.rotate(rotation,screenW/2, screenH/2);
+            */
+            return true;
+        } else {
+            // get coordinates of users touch
+            float touchX = event.getX();
+            float touchY = event.getY();
 
-        int pointerIndex = event.getActionIndex();
+            int pointerIndex = event.getActionIndex();
 
-        int pointerId = event.getPointerId(pointerIndex);
+            int pointerId = event.getPointerId(pointerIndex);
 
-        int maskedAction = event.getActionMasked();
+            int maskedAction = event.getActionMasked();
 
 
-        if(freeHand || erase) {
-            // switch statement for free hand drawing
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    drawPath.moveTo(touchX, touchY);
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    drawPath.lineTo(touchX, touchY);
-                    break;
-                case MotionEvent.ACTION_UP:
-                    drawCanvas.drawPath(drawPath, drawPaint);
-                    drawPath.reset();
-                    break;
-                default:
-                    return false;
-            }
-        } else if (circle){
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    cx = touchX;
-                    cy = touchY;
-                    //drawPath.moveTo(touchX, touchY);
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    float deltax = touchX - cx;
-                    float deltay = touchY - cy;
-                    double radius = Math.sqrt(deltax*deltax + deltay*deltay);
-
-                    drawPath.addCircle(touchX, touchY, (float)radius, Path.Direction.CW);
-                    break;
-                case MotionEvent.ACTION_UP:
-                    drawCanvas.drawPath(drawPath, circlePaint);
-                    drawPath.reset();
-                    break;
-                default:
-                    return false;
-            }
-        } else if (square){
-            switch (maskedAction) {
-                case MotionEvent.ACTION_DOWN:{
-                    x1 = event.getX(pointerIndex);
-                    y1 = event.getY(pointerIndex);
-                    x2 = event.getX(pointerIndex);
-                    y2 = event.getY(pointerIndex);
-                    break;
+            if (freeHand || erase) {
+                // switch statement for free hand drawing
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        drawPath.moveTo(touchX, touchY);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        drawPath.lineTo(touchX, touchY);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        drawCanvas.drawPath(drawPath, drawPaint);
+                        drawPath.reset();
+                        break;
+                    default:
+                        return false;
                 }
-                case MotionEvent.ACTION_POINTER_DOWN: {
-                    x2 = event.getX(pointerIndex);
-                    y2 = event.getY(pointerIndex);
-                    break;
-                }
-                case MotionEvent.ACTION_MOVE: {
-                    break;
-                }
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_POINTER_UP:
-                case MotionEvent.ACTION_CANCEL: {
-                    drawPath.addRect(x1, y1, x2, y2, Path.Direction.CW);
-                    drawCanvas.drawPath(drawPath, squarePaint);
-                    drawPath.reset();
-                    break;
-                }
-            }
-        } else if (triangle){
+            } else if (circle) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        cx = touchX;
+                        cy = touchY;
+                        //drawPath.moveTo(touchX, touchY);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        float deltax = touchX - cx;
+                        float deltay = touchY - cy;
+                        double radius = Math.sqrt(deltax * deltax + deltay * deltay);
 
-        } else if (multiTouch){
-            switch (maskedAction) {
-                case MotionEvent.ACTION_DOWN:
-                case MotionEvent.ACTION_POINTER_DOWN: {
-                    PointF f = new PointF();
-                    f.x = event.getX(pointerIndex);
-                    f.y = event.getY(pointerIndex);
-                    mActivePointers.put(pointerId, f);
-                    break;
+                        drawPath.addCircle(touchX, touchY, (float) radius, Path.Direction.CW);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        drawCanvas.drawPath(drawPath, circlePaint);
+                        drawPath.reset();
+                        break;
+                    default:
+                        return false;
                 }
-                case MotionEvent.ACTION_MOVE: { // a pointer was moved
-                    for (int size = event.getPointerCount(), i = 0; i < size; i++) {
-                        PointF point = mActivePointers.get(event.getPointerId(i));
-                        if (point != null) {
-                            point.x = event.getX(i);
-                            point.y = event.getY(i);
-                        }
+            } else if (square) {
+                switch (maskedAction) {
+                    case MotionEvent.ACTION_DOWN: {
+                        x1 = event.getX(pointerIndex);
+                        y1 = event.getY(pointerIndex);
+                        x2 = event.getX(pointerIndex);
+                        y2 = event.getY(pointerIndex);
+                        break;
                     }
-                    break;
+                    case MotionEvent.ACTION_POINTER_DOWN: {
+                        x2 = event.getX(pointerIndex);
+                        y2 = event.getY(pointerIndex);
+                        break;
+                    }
+                    case MotionEvent.ACTION_MOVE: {
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_POINTER_UP:
+                    case MotionEvent.ACTION_CANCEL: {
+                        drawPath.addRect(x1, y1, x2, y2, Path.Direction.CW);
+                        drawCanvas.drawPath(drawPath, squarePaint);
+                        drawPath.reset();
+                        break;
+                    }
                 }
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_POINTER_UP:
-                case MotionEvent.ACTION_CANCEL: {
+            } else if (triangle) {
 
-                    mActivePointers.remove(pointerId);
+            } else if (multiTouch) {
+                switch (maskedAction) {
+                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_POINTER_DOWN: {
+                        PointF f = new PointF();
+                        f.x = event.getX(pointerIndex);
+                        f.y = event.getY(pointerIndex);
+                        mActivePointers.put(pointerId, f);
+                        break;
+                    }
+                    case MotionEvent.ACTION_MOVE: { // a pointer was moved
+                        for (int size = event.getPointerCount(), i = 0; i < size; i++) {
+                            PointF point = mActivePointers.get(event.getPointerId(i));
+                            if (point != null) {
+                                point.x = event.getX(i);
+                                point.y = event.getY(i);
+                            }
+                        }
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_POINTER_UP:
+                    case MotionEvent.ACTION_CANCEL: {
 
-                    break;
+                        mActivePointers.remove(pointerId);
+
+                        break;
+                    }
                 }
             }
+
+
+            // call the onDraw() method
+            invalidate();
+            return true;
         }
-
-
-
-
-        // call the onDraw() method
-        invalidate();
-        return true;
-
     }
+
 
     public void setColor(String newColor){
         //set color
@@ -315,13 +363,108 @@ public class DrawingView extends View {
                 multiTouch = false;
                 triangle = false;
                 break;
-            case "multi_touch":
-                circle = false;
-                square = false;
-                triangle = false;
+        }
+
+    }
+
+    public void setGesture(String shape){
+        switch (shape) {
+            case "gesture":
+                multiGesture = false;
+                pinch = false;
+                multiTouch = false;
+                gesture = true;
+                break;
+            case "pinch":
+                gesture = false;
+                multiGesture = false;
+                multiTouch = false;
+                pinch = true;
+                break;
+            case "multiGesture":
+                pinch = false;
+                gesture = false;
+                multiTouch = false;
+                multiGesture = true;
+                break;
+            case "false":
+                pinch = false;
+                gesture = false;
+                multiTouch = false;
+                multiGesture = false;
+                break;
+            case "multiTouch":
+                pinch = false;
+                gesture = false;
+                multiGesture = false;
                 multiTouch = true;
                 break;
         }
 
     }
+
+
+
+    @Override
+    public boolean onDown(MotionEvent event) {
+        Log.d(DEBUG_TAG,"onDown: " + event.toString());
+        return true;
+    }
+
+    @Override
+    public boolean onFling(MotionEvent event1, MotionEvent event2,
+                           float velocityX, float velocityY) {
+        Log.d(DEBUG_TAG, "onFling: " + event1.toString()+event2.toString());
+        return true;
+    }
+
+
+    @Override
+    public void onLongPress(MotionEvent event) {
+        Log.d(DEBUG_TAG, "onLongPress: " + event.toString());
+        this.setBackgroundColor(Color.WHITE);
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                            float distanceY) {
+        Log.d(DEBUG_TAG, "onScroll: " + e1.toString()+e2.toString());
+        return true;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent event) {
+        Log.d(DEBUG_TAG, "onShowPress: " + event.toString());
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent event) {
+        Log.d(DEBUG_TAG, "onSingleTapUp: " + event.toString());
+        return true;
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent event) {
+        Log.d(DEBUG_TAG, "onDoubleTap: " + event.toString());
+        this.setBackgroundColor(paintColor);
+        return true;
+    }
+
+    @Override
+    public boolean onDoubleTapEvent(MotionEvent event) {
+        Log.d(DEBUG_TAG, "onDoubleTapEvent: " + event.toString());
+        return true;
+    }
+
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent event) {
+        Log.d(DEBUG_TAG, "onSingleTapConfirmed: " + event.toString());
+        return true;
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
 }
+

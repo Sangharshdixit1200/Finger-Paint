@@ -14,4 +14,7 @@
     <string name="square">Square</string>
     <string name="tri">Triangle</string>
     <string name="multiTouch">Multi Touch</string>
+    <string name="gesture">Gesture</string>
+    <string name="pinch">Pinch</string>
+    <string name="multiGesture">Multi Gesture</string>
 </resources>
