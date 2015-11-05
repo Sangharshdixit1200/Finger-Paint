@@ -52,7 +52,7 @@
 
         </LinearLayout>
 
-        <!-- Top Row -->
+
         <LinearLayout
             android:id="@+id/paint_colors"
             android:layout_width="wrap_content"
@@ -125,7 +125,7 @@
 
 
         </LinearLayout>
-        <!-- Bottom Row -->
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -1,5 +1,6 @@
 package uk.ac.st_andrews.cs.rbwilliams.fingerpaint;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.Image;
@@ -18,6 +19,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
@@ -45,15 +47,20 @@ public class MainActivity extends AppCompatActivity implements OnClickListener,
     private float largeBrush;
 
     private static final String DEBUG_TAG = "Gestures";
+    public final static String EXTRA_MESSAGE =  "uk.ac.st_andrews.cs.rbwilliams.fingerpaint.MESSAGE";
+
     private GestureDetectorCompat mDetector;
 
     private Matrix matrix = new Matrix();
     private float scale = 1f;
     private ScaleGestureDetector SGD;
 
+    Intent intent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //setContentView(R.layout.home);
         setContentView(R.layout.activity_main);
         /*
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -68,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener,
             }
         });
         */
+
 
         drawView = (DrawingView)findViewById(R.id.drawing);
 
@@ -109,7 +117,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener,
 
         SGD = new ScaleGestureDetector(this,new ScaleListener());
 
+
+
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -191,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener,
 
             // Listen for click on large brush
             ImageButton largeBtn = (ImageButton)brushDialog.findViewById(R.id.large_brush);
-            largeBtn.setOnClickListener(new OnClickListener(){
+            largeBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     drawView.setBrushSize(largeBrush);
@@ -265,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener,
                 }
             });
             newDialog.show();
-        } else if(view.getId()==R.id.save_btn){
+        }  else if(view.getId()==R.id.save_btn){
             //save drawing
             AlertDialog.Builder saveDialog = new AlertDialog.Builder(this);
             saveDialog.setTitle("Save drawing");
@@ -280,6 +292,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener,
                         Toast savedToast = Toast.makeText(getApplicationContext(),
                                 "Drawing saved to Gallery!", Toast.LENGTH_SHORT);
                         savedToast.show();
+                        startIntent(imgSaved);
                     }
                     else{
                         Toast unsavedToast = Toast.makeText(getApplicationContext(),
@@ -398,17 +411,21 @@ public class MainActivity extends AppCompatActivity implements OnClickListener,
 
     }
 
+    public void startIntent(String imgSaved){
+        intent = new Intent(this, PreviewActivity.class);
+        intent.putExtra(EXTRA_MESSAGE,imgSaved);
+        startActivity(intent);
+    }
+
 
 
 
     @Override
     public boolean onTouchEvent(MotionEvent event){
-        if (drawView.gesture){
+
             this.mDetector.onTouchEvent(event);
-        } else if (drawView.pinch){
+        if (drawView.pinch){
             SGD.onTouchEvent(event);
-        } else if (drawView.multiGesture){
-            //drawView.setRotation(rotation(event));
         }
 
 

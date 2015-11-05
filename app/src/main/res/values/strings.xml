@@ -17,4 +17,7 @@
     <string name="gesture">Gesture</string>
     <string name="pinch">Pinch</string>
     <string name="multiGesture">Multi Gesture</string>
+    <string name="edit_message">Name your drawing</string>
+    <string name="button_send">Send</string>
+    <string name="view">View</string>
 </resources>

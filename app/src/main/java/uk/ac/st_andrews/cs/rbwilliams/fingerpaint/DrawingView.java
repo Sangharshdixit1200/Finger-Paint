@@ -21,6 +21,8 @@ import android.util.TypedValue;
 
 /**
  * Created by rbwilliams on 23/10/2015.
+ * Code extended from tutorial http://code.tutsplus.com/tutorials/android-sdk-create-a-drawing-app-interface-creation--mobile-19021
+ *
  */
 public class DrawingView extends View implements View.OnClickListener,
         GestureDetector.OnGestureListener,
@@ -55,7 +57,7 @@ public class DrawingView extends View implements View.OnClickListener,
             Color.CYAN, Color.GRAY, Color.RED, Color.DKGRAY,
             Color.LTGRAY, Color.YELLOW };
     private Paint squarePaint;
-    private float x1, y1, x2, y2;
+    private float x1, y1, x2, y2, x3, y3;
 
 
     private boolean triangle = false;
@@ -172,15 +174,6 @@ public class DrawingView extends View implements View.OnClickListener,
             return true;
         } else if(pinch){
             return super.onTouchEvent(event);
-        }else if(multiGesture){
-            /*
-            double delta_x = (event.getX(0) - event.getX(1));
-            double delta_y = (event.getY(0) - event.getY(1));
-            double radians = Math.atan2(delta_y, delta_x);
-            float rotation =  (float) Math.toDegrees(radians);
-            drawCanvas.rotate(rotation,screenW/2, screenH/2);
-            */
-            return true;
         } else {
             // get coordinates of users touch
             float touchX = event.getX();
@@ -237,6 +230,78 @@ public class DrawingView extends View implements View.OnClickListener,
                         y1 = event.getY(pointerIndex);
                         x2 = event.getX(pointerIndex);
                         y2 = event.getY(pointerIndex);
+
+                        break;
+                    }
+                    case MotionEvent.ACTION_POINTER_DOWN: {
+                        x2 = event.getX(pointerIndex);
+                        y2 = event.getY(pointerIndex);
+                        break;
+                    }
+                    case MotionEvent.ACTION_MOVE: {
+                        x2 = event.getX(pointerIndex);
+                        y2 = event.getY(pointerIndex);
+                        drawPath.addRect(x1, y1, x2, y2, Path.Direction.CCW);
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_POINTER_UP:
+                    case MotionEvent.ACTION_CANCEL: {
+                        //drawPath.addRect(x1, y1, x2, y2, Path.Direction.CW);
+                        drawCanvas.drawPath(drawPath, squarePaint);
+                        drawPath.reset();
+                        break;
+                    }
+                }
+            } else if (triangle) {
+                switch (maskedAction) {
+                    case MotionEvent.ACTION_DOWN: {
+                        x1 = event.getX(pointerIndex);
+                        y1 = event.getY(pointerIndex);
+                        x2 = event.getX(pointerIndex);
+                        y2 = event.getY(pointerIndex);
+                        x3 = event.getX(pointerIndex);
+                        y3 = event.getY(pointerIndex);
+
+
+                        drawPath.moveTo(x1, y1);
+
+                        break;
+                    }
+                    case MotionEvent.ACTION_POINTER_DOWN: {
+                        x2 = event.getX(pointerIndex);
+                        y2 = event.getY(pointerIndex);
+                        x3 = event.getX(pointerIndex);
+                        y3 = event.getY(pointerIndex);
+
+
+                        drawPath.lineTo(x2, y2);
+                        drawPath.moveTo(x2, y2);
+                        drawPath.lineTo(x3, y3);
+                        drawPath.moveTo(x3, y3);
+                        drawPath.lineTo(x1, y1);
+                        break;
+                    }
+                    case MotionEvent.ACTION_MOVE: {
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_POINTER_UP:
+                    case MotionEvent.ACTION_CANCEL: {
+                        drawCanvas.drawPath(drawPath, squarePaint);
+                        drawPath.reset();
+                        break;
+                    }
+                }
+            } else if(multiGesture){
+                Log.d(DEBUG_TAG,"multiGesture");
+                switch (maskedAction) {
+                    case MotionEvent.ACTION_DOWN: {
+                        x1 = event.getX(pointerIndex);
+                        y1 = event.getY(pointerIndex);
+                        x2 = event.getX(pointerIndex);
+                        y2 = event.getY(pointerIndex);
+
                         break;
                     }
                     case MotionEvent.ACTION_POINTER_DOWN: {
@@ -256,8 +321,6 @@ public class DrawingView extends View implements View.OnClickListener,
                         break;
                     }
                 }
-            } else if (triangle) {
-
             } else if (multiTouch) {
                 switch (maskedAction) {
                     case MotionEvent.ACTION_DOWN:
