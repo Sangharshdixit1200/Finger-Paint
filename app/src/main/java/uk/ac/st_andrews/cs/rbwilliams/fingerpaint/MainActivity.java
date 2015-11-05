@@ -1,5 +1,6 @@
 package uk.ac.st_andrews.cs.rbwilliams.fingerpaint;
 
+import android.media.Image;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -20,6 +21,7 @@ import android.content.DialogInterface;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
 
+import static uk.ac.st_andrews.cs.rbwilliams.fingerpaint.R.drawable.circle;
 import static uk.ac.st_andrews.cs.rbwilliams.fingerpaint.R.drawable.paint;
 import static uk.ac.st_andrews.cs.rbwilliams.fingerpaint.R.drawable.paint_pressed;
 
@@ -27,7 +29,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     private DrawingView drawView;
     private ImageButton currPaint;
-    private ImageButton saveBtn;
     private float smallBrush;
     private float mediumBrush;
     private float largeBrush;
@@ -75,9 +76,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         ImageButton newBtn = (ImageButton) findViewById(R.id.new_btn);
         newBtn.setOnClickListener(this);
 
-        saveBtn = (ImageButton)findViewById(R.id.save_btn);
+        ImageButton saveBtn = (ImageButton) findViewById(R.id.save_btn);
         saveBtn.setOnClickListener(this);
 
+        ImageButton shapesBtn = (ImageButton) findViewById(R.id.shapes_btn);
+        shapesBtn.setOnClickListener(this);
     }
 
     @Override
@@ -136,6 +139,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     drawView.setBrushSize(smallBrush);
                     drawView.setLastBrushSize(smallBrush);
                     drawView.setErase(false);
+                    drawView.setShape("false");
+                    drawView.setFreeHand(true);
                     brushDialog.dismiss();
                 }
             });
@@ -148,6 +153,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     drawView.setBrushSize(mediumBrush);
                     drawView.setLastBrushSize(mediumBrush);
                     drawView.setErase(false);
+                    drawView.setShape("false");
+                    drawView.setFreeHand(true);
                     brushDialog.dismiss();
                 }
             });
@@ -160,6 +167,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     drawView.setBrushSize(largeBrush);
                     drawView.setLastBrushSize(largeBrush);
                     drawView.setErase(false);
+                    drawView.setShape("false");
+                    drawView.setFreeHand(true);
                     brushDialog.dismiss();
                 }
             });
@@ -176,6 +185,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 @Override
                 public void onClick(View v) {
                     drawView.setErase(true);
+                    drawView.setShape("false");
+                    drawView.setFreeHand(false);
                     drawView.setBrushSize(smallBrush);
                     brushDialog.dismiss();
                 }
@@ -185,6 +196,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 @Override
                 public void onClick(View v) {
                     drawView.setErase(true);
+                    drawView.setShape("false");
+                    drawView.setFreeHand(false);
                     drawView.setBrushSize(mediumBrush);
                     brushDialog.dismiss();
                 }
@@ -194,6 +207,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 @Override
                 public void onClick(View v) {
                     drawView.setErase(true);
+                    drawView.setShape("false");
+                    drawView.setFreeHand(false);
                     drawView.setBrushSize(largeBrush);
                     brushDialog.dismiss();
                 }
@@ -246,6 +261,59 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 }
             });
             saveDialog.show();
+        } else if (view.getId() == R.id.shapes_btn){
+            final Dialog shapesDialog = new Dialog(this);
+            shapesDialog.setTitle("Choose a shape to draw:");
+            shapesDialog.setContentView(R.layout.shapes_chooser);
+
+            // Listen for click on small brush
+            ImageButton smallBtn = (ImageButton)shapesDialog.findViewById(R.id.circle);
+            smallBtn.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    drawView.setShape("circle");
+                    drawView.setErase(false);
+                    drawView.setFreeHand(false);
+                    shapesDialog.dismiss();
+                }
+            });
+
+            // Listen for click on medium brush
+            ImageButton mediumBtn = (ImageButton)shapesDialog.findViewById(R.id.square);
+            mediumBtn.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    drawView.setShape("square");
+                    drawView.setErase(false);
+                    drawView.setFreeHand(false);
+                    shapesDialog.dismiss();
+                }
+            });
+
+            // Listen for click on large brush
+            ImageButton largeBtn = (ImageButton)shapesDialog.findViewById(R.id.triangle);
+            largeBtn.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    drawView.setShape("triangle");
+                    drawView.setErase(false);
+                    drawView.setFreeHand(false);
+                    shapesDialog.dismiss();
+                }
+            });
+
+            ImageButton multiTouchBtn = (ImageButton) shapesDialog.findViewById(R.id.multiTouch);
+            multiTouchBtn.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    drawView.setShape("multi_touch");
+                    drawView.setErase(false);
+                    drawView.setFreeHand(false);
+                    shapesDialog.dismiss();
+                }
+            });
+
+            shapesDialog.show();
         }
 
     }

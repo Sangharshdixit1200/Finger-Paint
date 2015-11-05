@@ -44,6 +44,15 @@
             android:src="@drawable/brushes3" />
 
         <ImageButton
+            android:id="@+id/shapes_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/shapes"
+            android:scaleType="fitCenter"
+            android:src="@drawable/shapes" />
+
+        <ImageButton
             android:id="@+id/erase_btn"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"

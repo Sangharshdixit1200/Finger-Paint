@@ -9,4 +9,9 @@
     <string name="sml">Small</string>
     <string name="med">Medium</string>
     <string name="lrg">Large</string>
+    <string name="shapes">Shapes</string>
+    <string name="circle">Circle</string>
+    <string name="square">Square</string>
+    <string name="tri">Triangle</string>
+    <string name="multiTouch">Multi Touch</string>
 </resources>
